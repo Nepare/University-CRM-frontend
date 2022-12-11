@@ -46,6 +46,8 @@ class StartingScreen(ctk.CTk):
 
         self.content_frame = ctk.CTkFrame(master=self)
         self.content_frame.grid(row=1, sticky="nsew")
+        self.content_frame.rowconfigure(0, weight=1)
+        self.content_frame.columnconfigure(0, weight=1)
 
         # =========================== NAVIGATION BAR ===========================
 
@@ -77,25 +79,58 @@ class StartingScreen(ctk.CTk):
 
         # ===========================                ===========================
 
+        self.init_user_info_UI()
+
+    def init_user_info_UI(self):
+        self.user_info = ctk.CTkFrame(master=self.content_frame)
+        self.user_info.grid(row=0, column=0, sticky="nsew")
+
+        self.user_info.columnconfigure((0, 4), weight=1)
+        self.user_info.columnconfigure((1, 2, 3), weight=5)
+        self.user_info.rowconfigure((0, 1), weight=1)
+
+        self.user_info_profile = ctk.CTkFrame(master=self.user_info, border_color="black", border_width=1)
+        self.user_info_profile.grid(row=0, column=1, sticky="nsew", padx=5, pady=(10, 5))
+
+        self.user_info_basic = ctk.CTkFrame(master=self.user_info, border_color="black", border_width=1)
+        self.user_info_basic.grid(row=0, column=2, columnspan=2, sticky="nsew", padx=5, pady=(10, 5))
+
+        self.user_info_uni = ctk.CTkFrame(master=self.user_info, border_color="black", border_width=1)
+        self.user_info_uni.grid(row=1, column=1, sticky="nsew", padx=5, pady=(5, 10))
+
+        self.user_info_parameters = ctk.CTkFrame(master=self.user_info, border_color="black", border_width=1)
+        self.user_info_parameters.grid(row=1, column=2, sticky="nsew", padx=5, pady=(5, 10))
+
+        self.user_info_bio = ctk.CTkFrame(master=self.user_info, border_color="black", border_width=1)
+        self.user_info_bio.grid(row=1, column=3, sticky="nsew", padx=5, pady=(5, 10))
+
+    def hide_all_windows(self):
+        self.user_info.grid_forget()
+
     def navigate_home(self):
         self.return_highlighted_texts_to_normal()
         self.btn_home.configure(font=("Segoe UI", -13, "bold"))
+        self.user_info.grid(row=0, column=0, sticky="nsew")
 
     def navigate_group(self):
         self.return_highlighted_texts_to_normal()
         self.btn_group.configure(font=("Segoe UI", -13, "bold"))
+        self.hide_all_windows()
 
     def navigate_work_materials(self):
         self.return_highlighted_texts_to_normal()
         self.btn_work.configure(font=("Segoe UI", -13, "bold"))
+        self.hide_all_windows()
 
     def navigate_timetable(self):
         self.return_highlighted_texts_to_normal()
         self.btn_timetable.configure(font=("Segoe UI", -13, "bold"))
+        self.hide_all_windows()
 
     def navigate_select_user(self):
         self.return_highlighted_texts_to_normal()
         self.btn_user.configure(font=("Segoe UI", -13, "bold"))
+        self.hide_all_windows()
 
     def return_highlighted_texts_to_normal(self):
         self.btn_home.configure(font=("Segoe UI", -13))
