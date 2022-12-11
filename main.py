@@ -22,6 +22,9 @@ class StartingScreen(ctk.CTk):
         self.center_app_on_screen()
         self.protocol("WM_DELETE_WINDOW", self.on_closing)
 
+        self.email = tk.StringVar()
+        self.password = tk.StringVar()
+
         self.initUI()
 
     def center_app_on_screen(self):
@@ -73,17 +76,19 @@ class StartingScreen(ctk.CTk):
         self.btn_timetable.grid(row=0, column=3, sticky="nsew")
 
         self.btn_user = ctk.CTkButton(master=self.navigation_bar, text="SELECT USER", corner_radius=0, border_width=1,
-                                      font=("Segoe UI", -13), fg_color="#212529", border_color="white",
+                                      font=("Segoe UI", -13), fg_color="#212529", border_color="white", height=20,
                                       command=self.navigate_select_user)
-        self.btn_user.grid(row=0, column=5, sticky="e", padx=5)
+        self.btn_user.grid(row=0, column=5, sticky="nse", padx=5, pady=5)
 
         # ===========================                ===========================
 
+        self.init_authorization_screen()
         self.init_user_info_UI()
+        self.hide_all_windows()
+        self.navigate_home()
 
     def init_user_info_UI(self):
         self.user_info = ctk.CTkFrame(master=self.content_frame)
-        self.user_info.grid(row=0, column=0, sticky="nsew")
 
         self.user_info.columnconfigure((0, 4), weight=1)
         self.user_info.columnconfigure((1, 2, 3), weight=5)
@@ -104,13 +109,45 @@ class StartingScreen(ctk.CTk):
         self.user_info_bio = ctk.CTkFrame(master=self.user_info, border_color="black", border_width=1)
         self.user_info_bio.grid(row=1, column=3, sticky="nsew", padx=5, pady=(5, 10))
 
+    def init_authorization_screen(self):
+        self.auth_info = ctk.CTkFrame(master=self.content_frame)
+
+        self.auth_info.rowconfigure(0, weight=1)
+        self.auth_info.columnconfigure((0, 2), weight=1)
+        self.auth_info.columnconfigure(1, weight=5)
+
+        self.auth_info_login_form = ctk.CTkFrame(master=self.auth_info, border_color="black", border_width=1)
+        self.auth_info_login_form.grid(row=0, column=1, sticky="nsew", pady=10, padx=225)
+
+        self.auth_info_login_form.rowconfigure((0, 1, 2, 4), weight=1)
+        self.auth_info_login_form.rowconfigure(3, weight=15)
+        self.auth_info_login_form.columnconfigure((0, 2), weight=1)
+        self.auth_info_login_form.columnconfigure(1, weight=5)
+
+        self.login_label = ctk.CTkLabel(master=self.auth_info_login_form, text="Авторизация", font=("Segoe UI", -20))
+        self.login_label.grid(row=0, column=1, sticky="n", pady=15)
+
+        self.login_email = ctk.CTkEntry(master=self.auth_info_login_form, placeholder_text="E-mail", height=40)
+        self.login_email.grid(row=1, column=1, sticky="new", pady=(25, 0))
+
+        self.login_password = ctk.CTkEntry(master=self.auth_info_login_form, placeholder_text="Пароль", height=40,
+                                           show="*")
+        self.login_password.grid(row=2, column=1, sticky="new")
+
+        self.login_submit_btn = ctk.CTkButton(master=self.auth_info_login_form, text="Войти", height=40,
+                                              font=("Segoe UI", -18), command=self.login)
+        self.login_submit_btn.grid(row=4, column=1, sticky="sew", pady=25)
+
     def hide_all_windows(self):
         self.user_info.grid_forget()
+        self.auth_info.grid_forget()
 
     def navigate_home(self):
         self.return_highlighted_texts_to_normal()
         self.btn_home.configure(font=("Segoe UI", -13, "bold"))
+        self.hide_all_windows()
         self.user_info.grid(row=0, column=0, sticky="nsew")
+        self.content_frame.grid_propagate(False)
 
     def navigate_group(self):
         self.return_highlighted_texts_to_normal()
@@ -131,6 +168,8 @@ class StartingScreen(ctk.CTk):
         self.return_highlighted_texts_to_normal()
         self.btn_user.configure(font=("Segoe UI", -13, "bold"))
         self.hide_all_windows()
+        self.auth_info.grid(row=0, column=0, sticky="nsew")
+        self.content_frame.grid_propagate(False)
 
     def return_highlighted_texts_to_normal(self):
         self.btn_home.configure(font=("Segoe UI", -13))
@@ -139,9 +178,12 @@ class StartingScreen(ctk.CTk):
         self.btn_timetable.configure(font=("Segoe UI", -13))
         self.btn_user.configure(font=("Segoe UI", -13))
 
+    def login(self):
+        self.email = self.login_email.get()
+        self.password = self.login_password.get()
+        print(self.email, self.password)
+
 
 if __name__ == "__main__":
     app = StartingScreen()
     app.mainloop()
-
-
