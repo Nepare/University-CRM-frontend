@@ -1,11 +1,13 @@
 import tkinter as tk
 import tkinter.messagebox
+from tkinter import ttk
+from tkinter import simpledialog
 import customtkinter as ctk
 import os
 from PIL import Image, ImageTk
-from business_logic import UserInfo
-from tkinter import ttk
 import requests
+from functools import partial
+from business_logic import UserInfo
 
 PATH = os.path.dirname(os.path.realpath(__file__))
 DEFAULT_FONT = ""
@@ -294,7 +296,9 @@ class StartingScreen(ctk.CTk):
                 subject_subgroups = ctk.CTkLabel(master=subject_form, text="Подгруппы")
                 subject_subgroups.grid(row=1, column=2, sticky="nsew", padx=2, pady=2)
 
-                btn_notify = ctk.CTkButton(master=subject_form, text="Дзинь", command=self.notify, width=10)
+                im = Image.open(os.path.join(PATH, "images", "bell.png"))
+                image = ctk.CTkImage(light_image=im)
+                btn_notify = ctk.CTkButton(master=subject_form, text="", image=image, command=self.notify, width=10)
                 btn_notify.grid(row=0, rowspan=2, column=3, padx=2, pady=2)
 
                 subject_dict = {'form': subject_form, 'starts': subject_starts, 'subgroups': subject_subgroups,
@@ -389,6 +393,7 @@ class StartingScreen(ctk.CTk):
                 subject_name = days_of_the_week[day][subject]['name']
                 subject_ends = days_of_the_week[day][subject]['ends']
                 subject_starts = days_of_the_week[day][subject]['starts']
+                subject_id = days_of_the_week[day][subject]['id']
                 subject_weeks = days_of_the_week[day][subject]['weeks']
                 subject_weeks_str = 'Нед. ' + ', '.join(list(map(lambda x: str(x), subject_weeks)))
                 subject_subgroups = days_of_the_week[day][subject]['subgroups']
@@ -405,6 +410,8 @@ class StartingScreen(ctk.CTk):
                 self.subject_list[day][subject]['name'].configure(text=subject_name)
                 self.subject_list[day][subject]['weeks'].configure(text=subject_weeks_str)
                 self.subject_list[day][subject]['subgroups'].configure(text=subject_subgroups_str)
+                notify_arg = partial(self.notify, subject_id)
+                self.subject_list[day][subject]['btn'].configure(command=notify_arg)
                 if subject_type == "ЛР":
                     self.subject_list[day][subject]['starts'].configure(fg_color="red", corner_radius=35)
                 if subject_type == "ЛК":
@@ -506,7 +513,9 @@ class StartingScreen(ctk.CTk):
 
         self.update_user_info()
 
-    def notify(self):
+    def notify(self, id_in):
+        message = tk.simpledialog.askstring('', 'Введите ваше сообщение')
+
         def callback(resp: requests.Response, *args, **kwargs):
             if resp.status_code == 201 or resp.status_code == 200:
                 print("Event called!")
@@ -517,15 +526,15 @@ class StartingScreen(ctk.CTk):
 
         if self.is_teacher:
             body = {
-                'classId': 47,
-                'message': "",
+                'classId': int(id_in),
+                'message': message,
                 'teacherId': int(self.id)
                     }
             requests.post('http://192.168.108.208:3002/api/v1/teachers/event', json=body, hooks=hooks)
         else:
             body = {
-                'classId': 47,
-                'message': "",
+                'classId': int(id_in),
+                'message': message,
                 'studentId': int(self.id)
                     }
             requests.post('http://192.168.108.208:3003/api/v1/students/event', json=body, hooks=hooks)
