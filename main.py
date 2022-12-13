@@ -251,43 +251,61 @@ class StartingScreen(ctk.CTk):
         self.timetable_info.rowconfigure((0, 1), weight=1)
         self.timetable_info.columnconfigure((0, 1, 2), weight=1)
 
-        # ПН: 1-название, время, неделя, препод, тип, кнопка уведомления
-
-        # TEACHER
-        # [{'class': {'dayOfTheWeek': '1', 'ends': '10:20', 'name': 'СиМОИБ', 'starts': '9:00', 'type': 'ЛР', 'id': 40},
-        #   'group': {'name': '021703', 'course': 1, 'id': 0},
-        #   'subgroups': [{'subgroup': 1, 'id': 4}, {'subgroup': 2, 'id': 5}],
-        #   'weeks': [{'number': 4, 'id': 35}, {'number': 2, 'id': 33}]}]
-
-        # STUDENT
-        # [{'class': {'dayOfTheWeek': '3', 'ends': '11:55', 'name': 'ПБЗ', 'starts': '10:35', 'type': 'ЛР', 'id': 51},
-        #   'group': {'name': '021703', 'course': 1, 'id': 0}, 'subgroups': [{'subgroup': 2, 'id': 5}],
-        #   'teacher': {'lastName': 'Шункевич', 'firstName': 'Даниил', 'middleName': 'Вячеславович',
-        #               'email': 'here.tempest@gmail.com', 'id': 48}, 'weeks': [{'number': 1, 'id': 32}]},
-        #  {'class': {'dayOfTheWeek': '2', 'ends': '11:55', 'name': 'ПБЗ', 'starts': '10:35', 'type': 'ЛК', 'id': 47},
-        #   'group': {'name': '021703', 'course': 1, 'id': 0},
-        #   'subgroups': [{'subgroup': 2, 'id': 5}, {'subgroup': 1, 'id': 4}],
-        #   'teacher': {'lastName': 'Шункевич', 'firstName': 'Даниил', 'middleName': 'Вячеславович',
-        #               'email': 'here.tempest@gmail.com', 'id': 48},
-        #   'weeks': [{'number': 1, 'id': 32}, {'number': 3, 'id': 34}]},
-        #  {'class': {'dayOfTheWeek': '1', 'ends': '10:20', 'name': 'СиМОИБ', 'starts': '9:00', 'type': 'ЛР', 'id': 40},
-        #   'group': {'name': '021703', 'course': 1, 'id': 0},
-        #   'subgroups': [{'subgroup': 1, 'id': 4}, {'subgroup': 2, 'id': 5}],
-        #   'teacher': {'lastName': 'Захаров', 'firstName': 'Владимир', 'middleName': 'Владимирович',
-        #               'email': 'igrakkaunt@gmail.com', 'id': 41},
-        #   'weeks': [{'number': 4, 'id': 35}, {'number': 2, 'id': 33}]}]
-
         days_of_the_week = []
+        days_of_the_week_names = ["Понедельник", "Вторник", "Среда", "Четверг", "Пятница", "Суббота"]
+        self.subject_list = []
         for i in range(6):
             column_of_timetable = i // 2
             row_of_timetable = i % 2
             current_day = ctk.CTkFrame(master=self.timetable_info, border_color="black", border_width=1,
                                        fg_color="#F8F9F9")
             current_day.grid(row=row_of_timetable, column=column_of_timetable, sticky="nsew", padx=2, pady=2)
-            days_of_the_week.append(current_day)
+            current_day.grid_propagate(False)
+            current_day.columnconfigure((0, 2), weight=1)
+            current_day.columnconfigure(1, weight=15)
+            current_day.rowconfigure((0, 1, 2, 3, 4, 5, 6, 7), weight=1)
+            ctk.CTkLabel(master=current_day, text=days_of_the_week_names[i], height=10,
+                         font=("Segoe UI", -19)).grid(row=0, column=0, columnspan=3, sticky="ew", padx=5)
+            subjects_of_the_day = []
+            for j in [1, 3, 5, 7]:
+                subject_form = ctk.CTkFrame(master=current_day, corner_radius=5)
+                subject_form.grid(row=j, column=1, sticky="nsew", pady=4, padx=5)
+                subject_form.grid_forget()
 
-        # self.btn_notify = ctk.CTkButton(master=self.timetable_info, text="Уведомить об опоздании", command=self.notify)
-        # self.btn_notify.grid(row=0, column=0)
+                subject_form.columnconfigure((0, 2, 3), weight=1)
+                subject_form.columnconfigure(1, weight=15)
+                subject_form.rowconfigure((0, 1), weight=1)
+
+                subject_starts = ctk.CTkLabel(master=subject_form, text="00:00")
+                subject_starts.grid(row=0, column=0, sticky="nsew", padx=2, pady=2)
+
+                subject_ends = ctk.CTkLabel(master=subject_form, text="99:99")
+                subject_ends.grid(row=1, column=0, sticky="nsew", padx=2, pady=2)
+
+                subject_name = ctk.CTkLabel(master=subject_form, text="Название")
+                subject_name.grid(row=0, column=1, sticky="nsew", padx=2, pady=2)
+
+                subject_teacher = ctk.CTkLabel(master=subject_form, text="")
+                subject_teacher.grid(row=1, column=1, sticky="nsew", padx=2, pady=2)
+
+                subject_weeks = ctk.CTkLabel(master=subject_form, text="Недели")
+                subject_weeks.grid(row=0, column=2, sticky="nsew", padx=2, pady=2)
+
+                subject_subgroups = ctk.CTkLabel(master=subject_form, text="Подгруппы")
+                subject_subgroups.grid(row=1, column=2, sticky="nsew", padx=2, pady=2)
+
+                btn_notify = ctk.CTkButton(master=subject_form, text="Дзинь", command=self.notify, width=10)
+                btn_notify.grid(row=0, rowspan=2, column=3, padx=2, pady=2)
+
+                subject_dict = {'form': subject_form, 'starts': subject_starts, 'subgroups': subject_subgroups,
+                                'name': subject_name, 'ends': subject_ends, 'teacher': subject_teacher,
+                                'weeks': subject_weeks, 'btn': btn_notify}
+
+                subjects_of_the_day.append(subject_dict)
+            self.subject_list.append(subjects_of_the_day)
+            for separ_index in [2, 4, 6]:
+                ttk.Separator(master=current_day, orient='horizontal').grid(column=1, row=separ_index, sticky='ewns')
+            days_of_the_week.append(current_day)
 
     def hide_all_windows(self):
         self.user_info.grid_forget()
@@ -339,8 +357,12 @@ class StartingScreen(ctk.CTk):
             self.draw_timetable()
 
     def draw_timetable(self):
-        teacher_timetable = [{'class': {'dayOfTheWeek': '1', 'ends': '10:20', 'name': 'СиМОИБ', 'starts': '9:00', 'type': 'ЛР', 'id': 40}, 'group': {'name': '021703', 'course': 1, 'id': 0}, 'subgroups': [{'subgroup': 1, 'id': 4}, {'subgroup': 2, 'id': 5}], 'weeks': [{'number': 4, 'id': 35}, {'number': 2, 'id': 33}]}]
-        self.timetable_data = [{'class': {'dayOfTheWeek': '3', 'ends': '11:55', 'name': 'ПБЗ', 'starts': '10:35', 'type': 'ЛР', 'id': 51}, 'group': {'name': '021703', 'course': 1, 'id': 0}, 'subgroups': [{'subgroup': 2, 'id': 5}], 'teacher': {'lastName': 'Шункевич', 'firstName': 'Даниил', 'middleName': 'Вячеславович', 'email': 'here.tempest@gmail.com', 'id': 48}, 'weeks': [{'number': 1, 'id': 32}]}, {'class': {'dayOfTheWeek': '2', 'ends': '11:55', 'name': 'ПБЗ', 'starts': '10:35', 'type': 'ЛК', 'id': 47}, 'group': {'name': '021703', 'course': 1, 'id': 0}, 'subgroups': [{'subgroup': 2, 'id': 5}, {'subgroup': 1, 'id': 4}], 'teacher': {'lastName': 'Шункевич', 'firstName': 'Даниил', 'middleName': 'Вячеславович', 'email': 'here.tempest@gmail.com', 'id': 48}, 'weeks': [{'number': 1, 'id': 32}, {'number': 3, 'id': 34}]}, {'class': {'dayOfTheWeek': '1', 'ends': '10:20', 'name': 'СиМОИБ', 'starts': '9:00', 'type': 'ЛР', 'id': 40}, 'group': {'name': '021703', 'course': 1, 'id': 0}, 'subgroups': [{'subgroup': 1, 'id': 4}, {'subgroup': 2, 'id': 5}], 'teacher': {'lastName': 'Захаров', 'firstName': 'Владимир', 'middleName': 'Владимирович', 'email': 'igrakkaunt@gmail.com', 'id': 41}, 'weeks': [{'number': 4, 'id': 35}, {'number': 2, 'id': 33}]}]
+        if self.debug_mode:
+            self.timetable_data = [{'class': {'dayOfTheWeek': '3', 'ends': '11:55', 'name': 'ПБЗ', 'starts': '10:35', 'type': 'ЛР', 'id': 51}, 'group': {'name': '021703', 'course': 1, 'id': 0}, 'subgroups': [{'subgroup': 2, 'id': 5}], 'teacher': {'lastName': 'Шункевич', 'firstName': 'Даниил', 'middleName': 'Вячеславович', 'email': 'here.tempest@gmail.com', 'id': 48}, 'weeks': [{'number': 1, 'id': 32}]},
+                                   {'class': {'dayOfTheWeek': '2', 'ends': '11:55', 'name': 'ПБЗ', 'starts': '10:35', 'type': 'ЛК', 'id': 47}, 'group': {'name': '021703', 'course': 1, 'id': 0}, 'subgroups': [{'subgroup': 2, 'id': 5}, {'subgroup': 1, 'id': 4}], 'teacher': {'lastName': 'Шункевич', 'firstName': 'Даниил', 'middleName': 'Вячеславович', 'email': 'here.tempest@gmail.com', 'id': 48}, 'weeks': [{'number': 1, 'id': 32}, {'number': 3, 'id': 34}]},
+                                   {'class': {'dayOfTheWeek': '3', 'ends': '11:55', 'name': 'ПБЗ', 'starts': '10:35', 'type': 'ЛК', 'id': 47}, 'group': {'name': '021703', 'course': 1, 'id': 0}, 'subgroups': [{'subgroup': 2, 'id': 5}, {'subgroup': 1, 'id': 4}], 'teacher': {'lastName': 'Шункевич', 'firstName': 'Даниил', 'middleName': 'Вячеславович', 'email': 'here.tempest@gmail.com', 'id': 48}, 'weeks': [{'number': 1, 'id': 32}, {'number': 3, 'id': 34}]},
+                                   {'class': {'dayOfTheWeek': '3', 'ends': '10:20', 'name': 'СиМОИБ', 'starts': '9:00', 'type': 'ЛР', 'id': 40}, 'group': {'name': '021703', 'course': 1, 'id': 0}, 'subgroups': [{'subgroup': 1, 'id': 4}, {'subgroup': 2, 'id': 5}], 'teacher': {'lastName': 'Захаров', 'firstName': 'Владимир', 'middleName': 'Владимирович', 'email': 'igrakkaunt@gmail.com', 'id': 41}, 'weeks': [{'number': 4, 'id': 35}, {'number': 2, 'id': 33}]},
+                                   {'class': {'dayOfTheWeek': '1', 'ends': '10:20', 'name': 'СиМОИБ', 'starts': '9:00', 'type': 'ЛР', 'id': 40}, 'group': {'name': '021703', 'course': 1, 'id': 0}, 'subgroups': [{'subgroup': 1, 'id': 4}, {'subgroup': 2, 'id': 5}], 'teacher': {'lastName': 'Захаров', 'firstName': 'Владимир', 'middleName': 'Владимирович', 'email': 'igrakkaunt@gmail.com', 'id': 41}, 'weeks': [{'number': 4, 'id': 35}, {'number': 2, 'id': 33}]}]
         days_of_the_week = [[], [], [], [], [], []]
         for class_info in self.timetable_data:
             current_day = int(class_info['class']['dayOfTheWeek']) - 1
@@ -352,27 +374,43 @@ class StartingScreen(ctk.CTk):
             for i in class_info['weeks']:
                 weeks.append(i['number'])
             weeks_dict = {'weeks': weeks}
-            print(class_info['teacher'])
-            final_name = class_info['teacher']['lastName'] + " " + class_info['teacher']['firstName'][0] + ". " + \
-                         class_info['teacher']['middleName'][0] + "."
-            name_dict = {'teacher': final_name}
+            name_dict = {}
+            if not self.is_teacher:
+                final_name = class_info['teacher']['lastName'] + " " + class_info['teacher']['firstName'][0] + ". " + \
+                             class_info['teacher']['middleName'][0] + "."
+                name_dict = {'teacher': final_name}
             all_info = class_info['class'] | sub_dict | weeks_dict | name_dict
             days_of_the_week[current_day].append(all_info)
 
-        for day in days_of_the_week:
-            print(day)
-            for subject in range(len(day)):
-                subject_type = day[subject]['type']
-                subject_name = day[subject]['name']
-                subject_ends = day[subject]['ends']
-                subject_starts = day[subject]['starts']
-                subject_starts = day[subject]['starts']
-                subject_weeks = day[subject]['weeks']
-                subject_subgroups = day[subject]['subgroups']
-                subject_teacher = day[subject]['teacher']
+        for day in range(len(days_of_the_week)):
+            print(days_of_the_week[day])
+            for subject in range(len(days_of_the_week[day])):
+                subject_type = days_of_the_week[day][subject]['type']
+                subject_name = days_of_the_week[day][subject]['name']
+                subject_ends = days_of_the_week[day][subject]['ends']
+                subject_starts = days_of_the_week[day][subject]['starts']
+                subject_weeks = days_of_the_week[day][subject]['weeks']
+                subject_weeks_str = 'Нед. ' + ', '.join(list(map(lambda x: str(x), subject_weeks)))
+                subject_subgroups = days_of_the_week[day][subject]['subgroups']
+                subject_subgroups_str = 'Подгр. ' + ', '.join(list(map(lambda x: str(x), subject_subgroups)))
+                if not self.is_teacher:
+                    subject_teacher = days_of_the_week[day][subject]['teacher']
+                else:
+                    subject_teacher = ""
 
-
-
+                self.subject_list[day][subject]['form'].grid(row=subject * 2 + 1, column=1, sticky="ew", pady=4, padx=2)
+                self.subject_list[day][subject]['starts'].configure(text=subject_starts)
+                self.subject_list[day][subject]['ends'].configure(text=subject_ends)
+                self.subject_list[day][subject]['teacher'].configure(text=subject_teacher)
+                self.subject_list[day][subject]['name'].configure(text=subject_name)
+                self.subject_list[day][subject]['weeks'].configure(text=subject_weeks_str)
+                self.subject_list[day][subject]['subgroups'].configure(text=subject_subgroups_str)
+                if subject_type == "ЛР":
+                    self.subject_list[day][subject]['starts'].configure(fg_color="red", corner_radius=35)
+                if subject_type == "ЛК":
+                    self.subject_list[day][subject]['starts'].configure(fg_color="green", corner_radius=35)
+                if subject_type == "ПЗ":
+                    self.subject_list[day][subject]['starts'].configure(fg_color="yellow", corner_radius=35)
 
     def navigate_select_user(self):
         self.return_highlighted_texts_to_normal()
