@@ -3,6 +3,7 @@ import os
 
 
 class UserInfo:
+    is_teacher: bool
     speciality = "Специальность"
     faculty = "Факультет"
     full_name = "ФИО"
@@ -133,3 +134,17 @@ class UserInfo:
             self.rating = "Rating"
             self.skills = {'Front-end': 0, 'Soft Skills': 0, 'Hard Skills': 0}
             self.profile_pic = 'profile_pic.jpg'
+
+    def import_json(self, json_data: dict, is_teacher):
+        if is_teacher:
+            self.change_user(1)
+        else:
+            self.change_user(0)
+        self.full_name = json_data['lastName'] + " " + json_data['firstName'] + " " + json_data['middleName']
+        self.email = json_data['email']
+        if 'group' in json_data.keys():
+            group_info = json_data['group']
+            group_name = group_info['name']
+            group_course = group_info['course']
+            self.number_course = "Курс: " + str(group_course)
+            self.other1 = "Группа: " + group_name

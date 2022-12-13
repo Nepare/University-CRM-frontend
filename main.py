@@ -17,6 +17,7 @@ ctk.set_default_color_theme("blue")  # Themes: "blue" (standard), "green", "dark
 class StartingScreen(ctk.CTk):
     WIDTH = 911
     HEIGHT = 550
+    is_teacher: bool = False
 
     def __init__(self):
         super().__init__()
@@ -217,8 +218,8 @@ class StartingScreen(ctk.CTk):
         self.auth_info_login_form = ctk.CTkFrame(master=self.auth_info, border_color="black", border_width=1)
         self.auth_info_login_form.grid(row=0, column=1, sticky="nsew", pady=10, padx=225)
 
-        self.auth_info_login_form.rowconfigure((0, 1, 2, 4), weight=1)
-        self.auth_info_login_form.rowconfigure(3, weight=15)
+        self.auth_info_login_form.rowconfigure((0, 1, 2, 3, 5), weight=1)
+        self.auth_info_login_form.rowconfigure(4, weight=15)
         self.auth_info_login_form.columnconfigure((0, 2), weight=1)
         self.auth_info_login_form.columnconfigure(1, weight=5)
 
@@ -232,9 +233,12 @@ class StartingScreen(ctk.CTk):
                                            show="*")
         self.login_password.grid(row=2, column=1, sticky="new")
 
+        self.is_teacher_checkbox = ctk.CTkCheckBox(master=self.auth_info_login_form, text="Зайти как преподаватель")
+        self.is_teacher_checkbox.grid(row=3, column=1, sticky="we")
+
         self.login_submit_btn = ctk.CTkButton(master=self.auth_info_login_form, text="Войти", height=40,
                                               font=("Segoe UI", -18), command=self.login)
-        self.login_submit_btn.grid(row=4, column=1, sticky="sew", pady=25)
+        self.login_submit_btn.grid(row=5, column=1, sticky="sew", pady=25)
 
     def init_timetable_screen(self):
         self.timetable_info = ctk.CTkFrame(master=self.content_frame)
@@ -270,6 +274,21 @@ class StartingScreen(ctk.CTk):
         self.hide_all_windows()
         self.timetable_info.grid(row=0, column=0, sticky="nsew")
         self.content_frame.grid_propagate(False)
+
+        def callback(resp: requests.Response, *args, **kwargs):
+            if resp.status_code == 201 or resp.status_code == 200:
+                data = resp.json()['data']
+                print(data)
+            else:
+                print('error')
+
+        hooks = {'response': callback}
+
+        if self.is_teacher:
+            body = {'teacherId': int(self.id)}
+            requests.post('http://192.168.108.208:3002/api/v1/teachers/schedule', json=body, hooks=hooks)
+        else:
+            requests.get('http://192.168.108.208:3001/api/v1/groups/' + str(self.group_id) + '/schedule', hooks=hooks)
 
     def navigate_select_user(self):
         self.return_highlighted_texts_to_normal()
@@ -315,20 +334,55 @@ class StartingScreen(ctk.CTk):
     def login(self):
         self.email = self.login_email.get()
         self.password = self.login_password.get()
-        if self.email == "petr_petr@gmail.com":
-            if self.password == "1234":
-                userinfo.change_user(1)
+        self.is_teacher = bool(self.is_teacher_checkbox.get())
+
+        body = {'login': self.email, 'password': self.password}
+
+        def callback(resp: requests.Response, *args, **kwargs):
+            if resp.status_code == 201:
+                data = resp.json()['data']
+                print(data)
+                self.id = data['id']
+                if 'group' in data.keys():
+                    group_info = data['group']
+                    self.group_id = group_info['id']
+                    self.group_name = group_info['name']
+                userinfo.import_json(data, self.is_teacher)
             else:
-                tk.messagebox.showerror("Ошибка", "Что-то не так!")
-        if self.email == "nikita_yakub@gmail.com":
-            if self.password == "4321":
-                userinfo.change_user(0)
-            else:
-                tk.messagebox.showerror("Ошибка", "Что-то не так!")
+                print('error')
+
+        hooks = {'response': callback}
+
+        if self.is_teacher:
+            requests.post('http://192.168.108.208:3002/api/v1/auth/sign-in', json=body, hooks=hooks)
+        else:
+            requests.post('http://192.168.108.208:3003/api/v1/auth/sign-in', json=body, hooks=hooks)
+
         self.update_user_info()
 
     def notify(self):
-        pass
+        def callback(resp: requests.Response, *args, **kwargs):
+            if resp.status_code == 201 or resp.status_code == 200:
+                print("Event called!")
+            else:
+                print('error')
+
+        hooks = {'response': callback}
+
+        if self.is_teacher:
+            body = {
+                'classId': 47,
+                'message': "",
+                'teacherId': int(self.id)
+                    }
+            requests.post('http://192.168.108.208:3002/api/v1/teachers/event', json=body, hooks=hooks)
+        else:
+            body = {
+                'classId': 47,
+                'message': "",
+                'studentId': int(self.id)
+                    }
+            requests.post('http://192.168.108.208:3003/api/v1/students/event', json=body, hooks=hooks)
 
 
 if __name__ == "__main__":
