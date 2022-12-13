@@ -378,16 +378,16 @@ class StartingScreen(ctk.CTk):
             for i in class_info['weeks']:
                 weeks.append(i['number'])
             weeks_dict = {'weeks': weeks}
+            group_dict = {'group': class_info['group']['name']}
             name_dict = {}
             if not self.is_teacher:
                 final_name = class_info['teacher']['lastName'] + " " + class_info['teacher']['firstName'][0] + ". " + \
                              class_info['teacher']['middleName'][0] + "."
                 name_dict = {'teacher': final_name}
-            all_info = class_info['class'] | sub_dict | weeks_dict | name_dict
+            all_info = class_info['class'] | sub_dict | weeks_dict | name_dict | group_dict
             days_of_the_week[current_day].append(all_info)
 
         for day in range(len(days_of_the_week)):
-            print(days_of_the_week[day])
             for subject in range(len(days_of_the_week[day])):
                 subject_type = days_of_the_week[day][subject]['type']
                 subject_name = days_of_the_week[day][subject]['name']
@@ -401,7 +401,7 @@ class StartingScreen(ctk.CTk):
                 if not self.is_teacher:
                     subject_teacher = days_of_the_week[day][subject]['teacher']
                 else:
-                    subject_teacher = ""
+                    subject_teacher = days_of_the_week[day][subject]['group']
 
                 self.subject_list[day][subject]['form'].grid(row=subject * 2 + 1, column=1, sticky="ew", pady=4, padx=2)
                 self.subject_list[day][subject]['starts'].configure(text=subject_starts)
