@@ -18,6 +18,7 @@ class StartingScreen(ctk.CTk):
     WIDTH = 911
     HEIGHT = 550
     is_teacher: bool = False
+    debug_mode: bool = False
 
     def __init__(self):
         super().__init__()
@@ -28,6 +29,7 @@ class StartingScreen(ctk.CTk):
 
         self.email = tk.StringVar()
         self.password = tk.StringVar()
+        self.logged_in = ""
 
         self.initUI()
 
@@ -61,22 +63,22 @@ class StartingScreen(ctk.CTk):
         self.navigation_bar.rowconfigure(0, weight=1)
         self.navigation_bar.columnconfigure((0, 1, 2, 3, 4, 5), weight=1)
         self.btn_home = ctk.CTkButton(master=self.navigation_bar, text="Home", corner_radius=0, font=("Segoe UI", -13),
-                                      fg_color="#212529", bg_color="#eeeeee", command=self.navigate_home)
+                                      fg_color="#212529", bg_color="#eeeeee", command=self.navigate_home, state="disabled")
         self.btn_home.grid(row=0, column=0, sticky="nsew")
 
         self.btn_group = ctk.CTkButton(master=self.navigation_bar, text="Group", corner_radius=0,
                                        font=("Segoe UI", -13), fg_color="#212529", bg_color="#eeeeee",
-                                       command=self.navigate_group)
+                                       command=self.navigate_group, state="disabled")
         self.btn_group.grid(row=0, column=1, sticky="nsew")
 
         self.btn_work = ctk.CTkButton(master=self.navigation_bar, text="Work Materials", corner_radius=0,
                                       font=("Segoe UI", -13), fg_color="#212529", bg_color="#eeeeee",
-                                      command=self.navigate_work_materials)
+                                      command=self.navigate_work_materials, state="disabled")
         self.btn_work.grid(row=0, column=2, sticky="nsew")
 
         self.btn_timetable = ctk.CTkButton(master=self.navigation_bar, text="Timetable", corner_radius=0,
                                            font=("Segoe UI", -13), fg_color="#212529", bg_color="#eeeeee",
-                                           command=self.navigate_timetable)
+                                           command=self.navigate_timetable, state="disabled")
         self.btn_timetable.grid(row=0, column=3, sticky="nsew")
 
         self.btn_user = ctk.CTkButton(master=self.navigation_bar, text="SELECT USER", corner_radius=0, border_width=1,
@@ -218,7 +220,7 @@ class StartingScreen(ctk.CTk):
         self.auth_info_login_form = ctk.CTkFrame(master=self.auth_info, border_color="black", border_width=1)
         self.auth_info_login_form.grid(row=0, column=1, sticky="nsew", pady=10, padx=225)
 
-        self.auth_info_login_form.rowconfigure((0, 1, 2, 3, 5), weight=1)
+        self.auth_info_login_form.rowconfigure((0, 1, 2, 3, 6), weight=1)
         self.auth_info_login_form.rowconfigure(4, weight=15)
         self.auth_info_login_form.columnconfigure((0, 2), weight=1)
         self.auth_info_login_form.columnconfigure(1, weight=5)
@@ -238,13 +240,54 @@ class StartingScreen(ctk.CTk):
 
         self.login_submit_btn = ctk.CTkButton(master=self.auth_info_login_form, text="Войти", height=40,
                                               font=("Segoe UI", -18), command=self.login)
-        self.login_submit_btn.grid(row=5, column=1, sticky="sew", pady=25)
+        self.login_submit_btn.grid(row=6, column=1, sticky="sew", pady=25)
+
+        self.login_debug_btn = ctk.CTkButton(master=self.auth_info_login_form, text="Отладка", command=self.debug)
+        self.login_debug_btn.grid(row=5, column=1, sticky="snew")
 
     def init_timetable_screen(self):
         self.timetable_info = ctk.CTkFrame(master=self.content_frame)
         self.timetable_info.grid(row=0, column=0)
-        self.btn_notify = ctk.CTkButton(master=self.timetable_info, text="Уведомить об опоздании", command=self.notify)
-        self.btn_notify.grid(row=0, column=0)
+        self.timetable_info.rowconfigure((0, 1), weight=1)
+        self.timetable_info.columnconfigure((0, 1, 2), weight=1)
+
+        # ПН: 1-название, время, неделя, препод, тип, кнопка уведомления
+
+        # TEACHER
+        # [{'class': {'dayOfTheWeek': '1', 'ends': '10:20', 'name': 'СиМОИБ', 'starts': '9:00', 'type': 'ЛР', 'id': 40},
+        #   'group': {'name': '021703', 'course': 1, 'id': 0},
+        #   'subgroups': [{'subgroup': 1, 'id': 4}, {'subgroup': 2, 'id': 5}],
+        #   'weeks': [{'number': 4, 'id': 35}, {'number': 2, 'id': 33}]}]
+
+        # STUDENT
+        # [{'class': {'dayOfTheWeek': '3', 'ends': '11:55', 'name': 'ПБЗ', 'starts': '10:35', 'type': 'ЛР', 'id': 51},
+        #   'group': {'name': '021703', 'course': 1, 'id': 0}, 'subgroups': [{'subgroup': 2, 'id': 5}],
+        #   'teacher': {'lastName': 'Шункевич', 'firstName': 'Даниил', 'middleName': 'Вячеславович',
+        #               'email': 'here.tempest@gmail.com', 'id': 48}, 'weeks': [{'number': 1, 'id': 32}]},
+        #  {'class': {'dayOfTheWeek': '2', 'ends': '11:55', 'name': 'ПБЗ', 'starts': '10:35', 'type': 'ЛК', 'id': 47},
+        #   'group': {'name': '021703', 'course': 1, 'id': 0},
+        #   'subgroups': [{'subgroup': 2, 'id': 5}, {'subgroup': 1, 'id': 4}],
+        #   'teacher': {'lastName': 'Шункевич', 'firstName': 'Даниил', 'middleName': 'Вячеславович',
+        #               'email': 'here.tempest@gmail.com', 'id': 48},
+        #   'weeks': [{'number': 1, 'id': 32}, {'number': 3, 'id': 34}]},
+        #  {'class': {'dayOfTheWeek': '1', 'ends': '10:20', 'name': 'СиМОИБ', 'starts': '9:00', 'type': 'ЛР', 'id': 40},
+        #   'group': {'name': '021703', 'course': 1, 'id': 0},
+        #   'subgroups': [{'subgroup': 1, 'id': 4}, {'subgroup': 2, 'id': 5}],
+        #   'teacher': {'lastName': 'Захаров', 'firstName': 'Владимир', 'middleName': 'Владимирович',
+        #               'email': 'igrakkaunt@gmail.com', 'id': 41},
+        #   'weeks': [{'number': 4, 'id': 35}, {'number': 2, 'id': 33}]}]
+
+        days_of_the_week = []
+        for i in range(6):
+            column_of_timetable = i // 2
+            row_of_timetable = i % 2
+            current_day = ctk.CTkFrame(master=self.timetable_info, border_color="black", border_width=1,
+                                       fg_color="#F8F9F9")
+            current_day.grid(row=row_of_timetable, column=column_of_timetable, sticky="nsew", padx=2, pady=2)
+            days_of_the_week.append(current_day)
+
+        # self.btn_notify = ctk.CTkButton(master=self.timetable_info, text="Уведомить об опоздании", command=self.notify)
+        # self.btn_notify.grid(row=0, column=0)
 
     def hide_all_windows(self):
         self.user_info.grid_forget()
@@ -279,16 +322,57 @@ class StartingScreen(ctk.CTk):
             if resp.status_code == 201 or resp.status_code == 200:
                 data = resp.json()['data']
                 print(data)
+                self.timetable_data = data
+                self.draw_timetable()
             else:
                 print('error')
 
         hooks = {'response': callback}
 
-        if self.is_teacher:
-            body = {'teacherId': int(self.id)}
-            requests.post('http://192.168.108.208:3002/api/v1/teachers/schedule', json=body, hooks=hooks)
+        if not self.debug_mode:
+            if self.is_teacher:
+                body = {'teacherId': int(self.id)}
+                requests.post('http://192.168.108.208:3002/api/v1/teachers/schedule', json=body, hooks=hooks)
+            else:
+                requests.get('http://192.168.108.208:3001/api/v1/groups/' + str(self.group_id) + '/schedule', hooks=hooks)
         else:
-            requests.get('http://192.168.108.208:3001/api/v1/groups/' + str(self.group_id) + '/schedule', hooks=hooks)
+            self.draw_timetable()
+
+    def draw_timetable(self):
+        teacher_timetable = [{'class': {'dayOfTheWeek': '1', 'ends': '10:20', 'name': 'СиМОИБ', 'starts': '9:00', 'type': 'ЛР', 'id': 40}, 'group': {'name': '021703', 'course': 1, 'id': 0}, 'subgroups': [{'subgroup': 1, 'id': 4}, {'subgroup': 2, 'id': 5}], 'weeks': [{'number': 4, 'id': 35}, {'number': 2, 'id': 33}]}]
+        self.timetable_data = [{'class': {'dayOfTheWeek': '3', 'ends': '11:55', 'name': 'ПБЗ', 'starts': '10:35', 'type': 'ЛР', 'id': 51}, 'group': {'name': '021703', 'course': 1, 'id': 0}, 'subgroups': [{'subgroup': 2, 'id': 5}], 'teacher': {'lastName': 'Шункевич', 'firstName': 'Даниил', 'middleName': 'Вячеславович', 'email': 'here.tempest@gmail.com', 'id': 48}, 'weeks': [{'number': 1, 'id': 32}]}, {'class': {'dayOfTheWeek': '2', 'ends': '11:55', 'name': 'ПБЗ', 'starts': '10:35', 'type': 'ЛК', 'id': 47}, 'group': {'name': '021703', 'course': 1, 'id': 0}, 'subgroups': [{'subgroup': 2, 'id': 5}, {'subgroup': 1, 'id': 4}], 'teacher': {'lastName': 'Шункевич', 'firstName': 'Даниил', 'middleName': 'Вячеславович', 'email': 'here.tempest@gmail.com', 'id': 48}, 'weeks': [{'number': 1, 'id': 32}, {'number': 3, 'id': 34}]}, {'class': {'dayOfTheWeek': '1', 'ends': '10:20', 'name': 'СиМОИБ', 'starts': '9:00', 'type': 'ЛР', 'id': 40}, 'group': {'name': '021703', 'course': 1, 'id': 0}, 'subgroups': [{'subgroup': 1, 'id': 4}, {'subgroup': 2, 'id': 5}], 'teacher': {'lastName': 'Захаров', 'firstName': 'Владимир', 'middleName': 'Владимирович', 'email': 'igrakkaunt@gmail.com', 'id': 41}, 'weeks': [{'number': 4, 'id': 35}, {'number': 2, 'id': 33}]}]
+        days_of_the_week = [[], [], [], [], [], []]
+        for class_info in self.timetable_data:
+            current_day = int(class_info['class']['dayOfTheWeek']) - 1
+            subgroups = []
+            for i in class_info['subgroups']:
+                subgroups.append(i['subgroup'])
+            sub_dict = {'subgroups': subgroups}
+            weeks = []
+            for i in class_info['weeks']:
+                weeks.append(i['number'])
+            weeks_dict = {'weeks': weeks}
+            print(class_info['teacher'])
+            final_name = class_info['teacher']['lastName'] + " " + class_info['teacher']['firstName'][0] + ". " + \
+                         class_info['teacher']['middleName'][0] + "."
+            name_dict = {'teacher': final_name}
+            all_info = class_info['class'] | sub_dict | weeks_dict | name_dict
+            days_of_the_week[current_day].append(all_info)
+
+        for day in days_of_the_week:
+            print(day)
+            for subject in range(len(day)):
+                subject_type = day[subject]['type']
+                subject_name = day[subject]['name']
+                subject_ends = day[subject]['ends']
+                subject_starts = day[subject]['starts']
+                subject_starts = day[subject]['starts']
+                subject_weeks = day[subject]['weeks']
+                subject_subgroups = day[subject]['subgroups']
+                subject_teacher = day[subject]['teacher']
+
+
+
 
     def navigate_select_user(self):
         self.return_highlighted_texts_to_normal()
@@ -341,12 +425,23 @@ class StartingScreen(ctk.CTk):
         def callback(resp: requests.Response, *args, **kwargs):
             if resp.status_code == 201:
                 data = resp.json()['data']
+                self.btn_home.configure(state="normal")
+                self.btn_group.configure(state="normal")
+                self.btn_timetable.configure(state="normal")
+                self.btn_work.configure(state="normal")
                 print(data)
                 self.id = data['id']
                 if 'group' in data.keys():
                     group_info = data['group']
                     self.group_id = group_info['id']
                     self.group_name = group_info['name']
+                if self.email != self.logged_in:
+                    if 'profile' in data.keys() and data['profile'] is not None:
+                        os.system(f"curl {data['profile']['uri']} > ./images/profile.png")
+                        userinfo.profile_pic = 'profile.png'
+                    else:
+                        userinfo.profile_pic = 'profile_pic.jpg'
+                self.logged_in = self.email
                 userinfo.import_json(data, self.is_teacher)
             else:
                 print('error')
@@ -357,6 +452,19 @@ class StartingScreen(ctk.CTk):
             requests.post('http://192.168.108.208:3002/api/v1/auth/sign-in', json=body, hooks=hooks)
         else:
             requests.post('http://192.168.108.208:3003/api/v1/auth/sign-in', json=body, hooks=hooks)
+
+        self.update_user_info()
+
+    def debug(self):
+        self.email = self.login_email.get()
+        self.password = self.login_password.get()
+        self.is_teacher = bool(self.is_teacher_checkbox.get())
+        self.btn_home.configure(state="normal")
+        self.btn_group.configure(state="normal")
+        self.btn_timetable.configure(state="normal")
+        self.btn_work.configure(state="normal")
+        userinfo.change_user(self.is_teacher)
+        self.debug_mode = True
 
         self.update_user_info()
 

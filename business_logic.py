@@ -97,7 +97,6 @@ class UserInfo:
             self.other2 = ""
             self.rating = "Рейтинг: 4"
             self.skills = {'Front-end': 4, 'Soft Skills': 3, 'Hard Skills': 4}
-            self.profile_pic = 'profile_beans.png'
         elif user_id == 1:
             self.speciality = "Кафедра ИИТ"
             self.faculty = "ФИТиУ"
@@ -117,7 +116,6 @@ class UserInfo:
             self.other2 = ""
             self.rating = "0% пересдач"
             self.skills = {'Знания': 1, 'Преподавание': 3, 'Личность': 4}
-            self.profile_pic = 'profile_hamster.jpg'
         else:
             self.speciality = "Специальность"
             self.faculty = "Факультет"
@@ -133,7 +131,6 @@ class UserInfo:
             self.other2 = "Other info"
             self.rating = "Rating"
             self.skills = {'Front-end': 0, 'Soft Skills': 0, 'Hard Skills': 0}
-            self.profile_pic = 'profile_pic.jpg'
 
     def import_json(self, json_data: dict, is_teacher):
         if is_teacher:
