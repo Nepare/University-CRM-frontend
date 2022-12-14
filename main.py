@@ -12,6 +12,8 @@ from business_logic import UserInfo
 PATH = os.path.dirname(os.path.realpath(__file__))
 DEFAULT_FONT = ""
 
+ip = "192.168.199.208"
+
 ctk.set_appearance_mode("System")  # Modes: "System" (standard), "Dark", "Light"
 ctk.set_default_color_theme("blue")  # Themes: "blue" (standard), "green", "dark-blue"
 
@@ -120,7 +122,8 @@ class StartingScreen(ctk.CTk):
         self.faculty.pack()
         self.button_edit = ctk.CTkButton(master=self.user_info_profile, text='Изменить', font=("Segoe UI", 13),
                                          fg_color='#0090DE', text_color='white',
-                                         command=userinfo.edit).pack(pady=15)
+                                         command=userinfo.edit)
+        #self.button_edit.pack(pady=15)
 
         # =========================== user contacts            ===========================
         self.user_info_basic = ctk.CTkFrame(master=self.user_info, border_color="#c5c7c4", border_width=0.5,
@@ -230,7 +233,7 @@ class StartingScreen(ctk.CTk):
         self.login_label = ctk.CTkLabel(master=self.auth_info_login_form, text="Авторизация", font=("Segoe UI", -20))
         self.login_label.grid(row=0, column=1, sticky="n", pady=15)
 
-        self.login_email = ctk.CTkEntry(master=self.auth_info_login_form, placeholder_text="E-mail", height=40)
+        self.login_email = ctk.CTkEntry(master=self.auth_info_login_form, placeholder_text="Логин", height=40)
         self.login_email.grid(row=1, column=1, sticky="new", pady=(25, 0))
 
         self.login_password = ctk.CTkEntry(master=self.auth_info_login_form, placeholder_text="Пароль", height=40,
@@ -343,7 +346,7 @@ class StartingScreen(ctk.CTk):
         def callback(resp: requests.Response, *args, **kwargs):
             if resp.status_code == 201 or resp.status_code == 200:
                 data = resp.json()['data']
-                print(data)
+                # print(data)
                 self.timetable_data = data
                 self.draw_timetable()
             else:
@@ -354,9 +357,9 @@ class StartingScreen(ctk.CTk):
         if not self.debug_mode:
             if self.is_teacher:
                 body = {'teacherId': int(self.id)}
-                requests.post('http://192.168.108.208:3002/api/v1/teachers/schedule', json=body, hooks=hooks)
+                requests.post('http://' + ip + ':3002/api/v1/teachers/schedule', json=body, hooks=hooks)
             else:
-                requests.get('http://192.168.108.208:3001/api/v1/groups/' + str(self.group_id) + '/schedule', hooks=hooks)
+                requests.get('http://' + ip + ':3001/api/v1/groups/' + str(self.group_id) + '/schedule', hooks=hooks)
         else:
             self.draw_timetable()
 
@@ -474,7 +477,7 @@ class StartingScreen(ctk.CTk):
                 self.btn_group.configure(state="normal")
                 self.btn_timetable.configure(state="normal")
                 self.btn_work.configure(state="normal")
-                print(data)
+                # print(data)
                 self.id = data['id']
                 if 'group' in data.keys():
                     group_info = data['group']
@@ -482,7 +485,9 @@ class StartingScreen(ctk.CTk):
                     self.group_name = group_info['name']
                 if self.email != self.logged_in:
                     if 'profile' in data.keys() and data['profile'] is not None:
-                        os.system(f"curl {data['profile']['uri']} > ./images/profile.png")
+                        old_uri = data['profile']['uri']
+                        new_uri = old_uri[0:7] + ip + old_uri[22:]
+                        os.system(f"curl {new_uri} > ./images/profile.png")
                         userinfo.profile_pic = 'profile.png'
                     else:
                         userinfo.profile_pic = 'profile_pic.jpg'
@@ -494,9 +499,9 @@ class StartingScreen(ctk.CTk):
         hooks = {'response': callback}
 
         if self.is_teacher:
-            requests.post('http://192.168.108.208:3002/api/v1/auth/sign-in', json=body, hooks=hooks)
+            requests.post('http://' + ip + ':3002/api/v1/auth/sign-in', json=body, hooks=hooks)
         else:
-            requests.post('http://192.168.108.208:3003/api/v1/auth/sign-in', json=body, hooks=hooks)
+            requests.post('http://' + ip + ':3003/api/v1/auth/sign-in', json=body, hooks=hooks)
 
         self.update_user_info()
 
@@ -530,14 +535,14 @@ class StartingScreen(ctk.CTk):
                 'message': message,
                 'teacherId': int(self.id)
                     }
-            requests.post('http://192.168.108.208:3002/api/v1/teachers/event', json=body, hooks=hooks)
+            requests.post('http://' + ip + ':3002/api/v1/teachers/event', json=body, hooks=hooks)
         else:
             body = {
                 'classId': int(id_in),
                 'message': message,
                 'studentId': int(self.id)
                     }
-            requests.post('http://192.168.108.208:3003/api/v1/students/event', json=body, hooks=hooks)
+            requests.post('http://' + ip + ':3003/api/v1/students/event', json=body, hooks=hooks)
 
 
 if __name__ == "__main__":
